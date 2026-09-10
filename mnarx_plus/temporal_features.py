@@ -123,13 +123,13 @@ class TemporalFeatureBuilder:
         """Create one feature row from current signal histories for recursive inference."""
         features: Dict[str, float] = {}
         for signal, model in self.models_.items():
+            if signal not in histories:
+                continue
             hist = np.asarray(histories[signal], dtype=float)
             need = model.lag_samples + (1 if model.include_current else 0)
             if len(hist) < need:
                 raise ValueError(f"Signal {signal} has insufficient history {len(hist)} < {need}.")
             win = hist[-need:][::-1]
-            if not model.include_current:
-                win = win[:-1]
             if model.pca is not None and model.scaler is not None:
                 z = model.pca.transform(model.scaler.transform(win.reshape(1, -1)))[0]
                 for i, val in enumerate(z):
